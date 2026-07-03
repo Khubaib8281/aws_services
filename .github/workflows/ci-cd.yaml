@@ -1,0 +1,37 @@
+version: 1
+applications:
+  - appRoot: .
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+            - npx prisma generate
+        build:
+          commands:
+            - npm run build
+      artifacts:
+        baseDirectory: .next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+    backend:
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - npx prisma migrate deploy
+    environment:
+      variables:
+        DATABASE_URL: $DATABASE_URL
+        AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+        AWS_REGION: $AWS_REGION
+        AWS_BUCKET_NAME: $AWS_BUCKET_NAME
+        GEMINI_AWS_API_KEY: $GEMINI_AWS_API_KEY
+        IAM_USER_CONSOLE_SIGNIN_URL: $IAM_USER_CONSOLE_SIGNIN_URL
+        CONSOLE_PASSWORD: $CONSOLE_PASSWORD
