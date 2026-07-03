@@ -5,7 +5,10 @@ import {
 } from "@aws-sdk/client-s3";
 
 const region = process.env.AWS_REGION!;
-const bucket = process.env.AWS_BUCKET_NAME!;
+const bucket = process.env.AWS_BUCKET_NAME;
+if (!bucket) {
+  throw new Error("AWS_BUCKET_NAME environment variable is not set. Ensure it is defined in Amplify console environment variables.");
+}
 
 const s3Client = new S3Client({
   region,
