@@ -8,7 +8,18 @@ export interface AnalysisResult {
   suggestions: string[];
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+let genAI: GoogleGenerativeAI | null = null;
+
+function getGeminiClient(): GoogleGenerativeAI {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_AWS_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY or GEMINI_AWS_API_KEY environment variable is not set.");
+    }
+    genAI = new GoogleGenerativeAI(apiKey);
+  }
+  return genAI;
+}
 
 const ANALYSIS_PROMPT = `You are an expert ATS (Applicant Tracking System) resume analyzer with deep knowledge of hiring practices across all industries.
 
@@ -47,7 +58,8 @@ export async function analyzeResume(
   resumeText: string
 ): Promise<AnalysisResult> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const client = getGeminiClient();
+    const model = client.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const result = await model.generateContent(ANALYSIS_PROMPT + resumeText);
     const response = result.response;
