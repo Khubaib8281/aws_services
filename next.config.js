@@ -8,6 +8,8 @@ import { resolve } from 'path';
 const nextConfig = {
   // Output as a standalone server bundle (required for Amplify SSR)
   output: 'standalone',
+  // Make pdf-parse an external package to prevent Webpack from bundling it
+  serverExternalPackages: ['pdf-parse'],
   // Enable React strict mode (optional but recommended)
   reactStrictMode: true,
   // Keep the default image domains empty; you can add your S3 domain if needed.
