@@ -5,8 +5,9 @@
  */
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   try {
-    // Dynamically import to get the CommonJS default export
-    const { default: pdfParse } = await import("pdf-parse");
+    // Dynamically import the pdf-parse module (CommonJS) and obtain the function
+    const pdfParseModule = await import("pdf-parse");
+    const pdfParse: any = (pdfParseModule as any).default ?? pdfParseModule;
     const data = await pdfParse(buffer);
     if (!data?.text?.trim()) {
       throw new Error("No text content found in PDF");

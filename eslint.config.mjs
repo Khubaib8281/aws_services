@@ -1,6 +1,2 @@
-import { defineConfig } from "eslint/config";
-
-export default defineConfig({
-  extends: ["next"],
-  rules: {}
-});
+import config from "./.eslintrc.json" assert { type: "json" };
+export default config;
