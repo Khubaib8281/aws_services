@@ -7,12 +7,14 @@ import {
 let s3Client: S3Client | null = null;
 
 function getRequiredEnv(name: string): string {
+  console.log("Environment keys:", Object.keys(process.env).sort());
+
   const value = process.env[name];
 
+  console.log(`${name} =`, value);
+
   if (!value || value.trim() === "") {
-    throw new Error(
-      `Missing required environment variable: ${name}`
-    );
+    throw new Error(`Missing required environment variable: ${name}`);
   }
 
   return value;
