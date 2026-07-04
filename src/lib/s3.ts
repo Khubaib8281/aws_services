@@ -6,14 +6,24 @@ import {
 
 let s3Client: S3Client | null = null;
 
+function getRequiredEnv(name: string): string {
+  const value = process.env[name];
+
+  if (!value || value.trim() === "") {
+    throw new Error(
+      `Missing required environment variable: ${name}`
+    );
+  }
+
+  return value;
+}
+
 function getS3() {
   if (!s3Client) {
-    const region = process.env.S3_REGION;
-    const accessKeyId = process.env.S3_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
-    if (!region || !accessKeyId || !secretAccessKey) {
-      throw new Error("AWS credentials or region not fully configured in environment variables.");
-    }
+    const region = getRequiredEnv("S3_REGION");
+    const accessKeyId = getRequiredEnv("S3_ACCESS_KEY_ID");
+    const secretAccessKey = getRequiredEnv("S3_SECRET_ACCESS_KEY");
+
     s3Client = new S3Client({
       region,
       credentials: {
@@ -22,10 +32,11 @@ function getS3() {
       },
     });
   }
+
   return {
     client: s3Client,
-    bucket: process.env.S3_BUCKET_NAME || "",
-    region: process.env.S3_REGION || "ap-south-1"
+    bucket: getRequiredEnv("S3_BUCKET_NAME"),
+    region: getRequiredEnv("S3_REGION"),
   };
 }
 
@@ -34,9 +45,7 @@ export async function uploadToS3(
   fileName: string
 ): Promise<{ key: string; url: string }> {
   const { client, bucket, region } = getS3();
-  if (!bucket) {
-    throw new Error("S3_BUCKET_NAME environment variable is not set.");
-  }
+
   const key = `resumes/${Date.now()}-${fileName}`;
 
   await client.send(
@@ -48,16 +57,15 @@ export async function uploadToS3(
     })
   );
 
-  const url = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
-
-  return { key, url };
+  return {
+    key,
+    url: `https://${bucket}.s3.${region}.amazonaws.com/${key}`,
+  };
 }
 
 export async function deleteFromS3(key: string): Promise<void> {
   const { client, bucket } = getS3();
-  if (!bucket) {
-    throw new Error("S3_BUCKET_NAME environment variable is not set.");
-  }
+
   await client.send(
     new DeleteObjectCommand({
       Bucket: bucket,

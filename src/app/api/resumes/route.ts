@@ -15,9 +15,20 @@ export async function GET() {
 
     return NextResponse.json(resumes);
   } catch (error) {
-    console.error("Failed to fetch resumes:", error);
+    console.error("========== FULL ERROR ==========");
+    console.error(error);
+    console.error("================================");
+
     return NextResponse.json(
-      { error: "Failed to fetch resumes" },
+      {
+        error: error instanceof Error ? error.message : String(error),
+        stack:
+          process.env.NODE_ENV === "development"
+            ? error instanceof Error
+              ? error.stack
+              : null
+            : undefined,
+      },
       { status: 500 }
     );
   }
@@ -55,14 +66,19 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to S3
+    console.log("1. Uploading to S3...");
     const { key, url } = await uploadToS3(buffer, file.name);
+    console.log("✅ S3 upload complete");
 
-    // Extract text from PDF
+    console.log("2. Extracting PDF...");
     const resumeText = await extractTextFromPdf(buffer);
+    console.log("✅ PDF extracted");
 
-    // Analyze with Gemini AI
+    console.log("3. Calling Gemini...");
     const analysisResult = await analyzeResume(resumeText);
+    console.log("✅ Gemini completed");
+
+    console.log("4. Saving to database...");
 
     // Save to database in a transaction
     const resume = await prisma.$transaction(async (tx) => {
