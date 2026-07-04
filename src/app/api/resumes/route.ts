@@ -45,6 +45,16 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    
+    console.log("===== ENV CHECK =====");
+    console.log({
+      S3_REGION: process.env.S3_REGION,
+      S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
+      HAS_ACCESS_KEY: !!process.env.S3_ACCESS_KEY_ID,
+      HAS_SECRET_KEY: !!process.env.S3_SECRET_ACCESS_KEY,
+      NODE_ENV: process.env.NODE_ENV,
+    });
+    console.log("=====================");
 
     // Validate file type
     if (file.type !== "application/pdf") {
